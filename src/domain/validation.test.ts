@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {blankProject} from './model';
 import {ProjectSchema} from './validation';
+import {createProject, projectDurationSeconds} from "./project";
 
 describe('project file validation', () => {
   it('accepts a newly created project', () => {
@@ -30,5 +31,28 @@ describe('project file validation', () => {
   it('rejects projects with invalid dimensions', () => {
     const project = {...blankProject(), width: 0};
     expect(ProjectSchema.safeParse(project).success).toBe(false);
+  });
+});
+
+describe("canonical project domain facade", () => {
+  it("creates a project accepted by the editor project schema", () => {
+    const project = createProject("統合テスト");
+    expect(project.name).toBe("統合テスト");
+    expect(ProjectSchema.safeParse(project).success).toBe(true);
+  });
+
+  it("calculates timeline duration in seconds from editor clips", () => {
+    const project = createProject();
+    project.tracks[0].clips.push({
+      id: "clip-1",
+      name: "sample",
+      kind: "video",
+      start: 3,
+      sourceIn: 0,
+      duration: 8,
+      color: "#fff",
+      volume: 1
+    });
+    expect(projectDurationSeconds(project)).toBe(11);
   });
 });
