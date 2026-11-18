@@ -2,6 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {blankProject} from './model';
 import {ProjectSchema} from './validation';
 import {createProject, projectDurationSeconds} from "./project";
+import {serializeProject} from '../services/io';
 
 describe('project file validation', () => {
   it('accepts a newly created project', () => {
@@ -54,5 +55,52 @@ describe("canonical project domain facade", () => {
       volume: 1
     });
     expect(projectDurationSeconds(project)).toBe(11);
+  });
+});
+
+
+describe('persistent project assets', () => {
+  it('keeps imported media metadata in the project schema', () => {
+    const project = blankProject();
+    project.assets.push({
+      id: 'asset-1',
+      name: 'iphone-video.mp4',
+      kind: 'video',
+      mime: 'video/mp4',
+      size: 1024,
+      duration: 12.5,
+      url: 'blob:temporary-session-url',
+      width: 1920,
+      height: 1080
+    });
+    const parsed = ProjectSchema.safeParse(project);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.assets).toHaveLength(1);
+      expect(parsed.data.assets[0].name).toBe('iphone-video.mp4');
+    }
+  });
+
+  it('loads legacy projects without an assets field as an empty media library', () => {
+    const {assets: _assets, ...legacyProject} = blankProject();
+    const parsed = ProjectSchema.safeParse(legacyProject);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.assets).toEqual([]);
+  });
+
+  it('does not serialize temporary browser object URLs', () => {
+    const project = blankProject();
+    project.assets.push({
+      id: 'asset-1',
+      name: 'clip.mp4',
+      kind: 'video',
+      mime: 'video/mp4',
+      size: 100,
+      duration: 5,
+      url: 'blob:temporary-session-url'
+    });
+    const serialized = serializeProject(project);
+    expect(serialized).toContain('clip.mp4');
+    expect(serialized).not.toContain('blob:temporary-session-url');
   });
 });
