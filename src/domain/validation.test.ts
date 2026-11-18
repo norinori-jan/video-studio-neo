@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {blankProject} from './model';
 import {ProjectSchema} from './validation';
+import {createProject, projectDurationSeconds} from "./project";
 
 describe('project file validation', () => {
   it('accepts a newly created project', () => {
@@ -32,8 +33,6 @@ describe('project file validation', () => {
     expect(ProjectSchema.safeParse(project).success).toBe(false);
   });
 });
-
-import {createProject, projectDurationSeconds} from "./project";
 
 describe("canonical project domain facade", () => {
   it("creates a project accepted by the editor project schema", () => {
