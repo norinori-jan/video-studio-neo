@@ -1,20 +1,44 @@
-# Next implementation backlog
+# Video Studio Neo 開発ロードマップ
 
-## 0.5.x
-- Project metadata is persisted; implement safe project schema versioning and migrations.
-- Add media relinking by file selection, using stable metadata checks (name, size, MIME, duration).
-- Add save/load/relink integration tests.
-- Harden timeline operations with frame-based timing and invariant tests.
+## 0.5.x — プロジェクトと素材管理
+- [x] 0.5.0: JSON読込時のZodスキーマ検証
+- [x] 0.5.1: Projectモデルの統一と秒単位の尺計算
+- [x] 0.5.2: 素材メタデータの永続化と一時URL除外
+- [ ] 0.5.3: 元ファイルの再リンク（ファイル名・サイズ・MIME照合）
+- [ ] 0.5.4: 複数素材の一括再リンク、欠落素材レポート
+- [ ] 0.5.5: スキーマバージョン移行と破損時の復旧
+- [ ] 0.5.6: フレーム基準の時間演算とタイムライン不変条件テスト
+- [ ] 0.5.7: 保存/読込/再リンクの統合テスト
 
-## 0.6.x
-1. Tauri 2 + Rust file dialogs, persistent media folder, SQLite, autosave.
-2. FFmpeg/ffprobe integration, thumbnails, waveforms, proxy media.
-3. Drag trim handles, snapping, ripple edits, linked A/V, frame-accurate undo commands.
-4. Multi-track video compositing, audio mixing, transitions, keyframes, color correction.
-5. Export profiles, progress/cancel, error recovery, packaging and signing.
+## 0.6.x — デスクトップ基盤とメディア処理
+- [ ] Tauri 2 + Rust、ネイティブファイルダイアログ
+- [ ] SQLite、自動保存、バックアップ/復旧
+- [ ] FFmpeg/ffprobeによるMP4等の安定した書き出し
+- [ ] サムネイル、音声波形、プロキシ生成とキャッシュ
+- [ ] 永続パス/相対パスとアプリ内メディアフォルダ
 
-## Known prototype limitations
-- Media binary data is not embedded in project JSON.
-- Browser object URLs are session-scoped and intentionally excluded from saved project files.
-- Media relinking is not implemented yet.
-- The experimental browser capture exports only the currently active video element as WebM; it is not a full timeline render.
+## 0.7.x — 編集操作の強化
+- [ ] トリムハンドル、スナップ、リップル編集
+- [ ] リンクされた映像/音声クリップと同期編集
+- [ ] フレーム精度のUndo/Redo
+- [ ] 複数映像トラック合成、音声ミキシング
+- [ ] トランジション、キーフレーム、カラー調整
+
+## 0.8.x — 書き出しと品質
+- [ ] 書き出しプリセット、タイムライン全体の正確なレンダリング
+- [ ] 書き出しキュー、進捗、キャンセル、再試行
+- [ ] 長尺/高解像度素材の負荷・メモリ検証
+
+## 1.0 — リリース準備
+- [ ] Windows/macOS向けパッケージング、署名、公証
+- [ ] オフライン動作、アクセシビリティ、キーボード操作
+- [ ] ユーザー向けドキュメントとリリースチェックリスト
+
+## 品質ゲート
+各PRで `npm test` と `npm run build`。メディアI/O変更時は旧プロジェクト読込、素材欠落表示、再リンク後のプレビュー、MP4素材の読込/再生を手動確認。
+
+## 現在の制限
+- 0.5.3は素材ごとの個別再リンク。ファイル名とサイズは完全一致、MIMEは双方に値がある場合に照合。
+- メディア本体とObject URLはプロジェクトJSONに保存しない。
+- ブラウザの実験的キャプチャは単一video要素のみで、タイムライン全体のMP4レンダリングではない。
+- Tauri/FFmpeg統合前のブラウザプロトタイプ。

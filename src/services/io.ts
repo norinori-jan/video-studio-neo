@@ -47,3 +47,20 @@ export async function importMedia(files:FileList|File[]){
  }
  return {assets,bad};
 }
+
+
+/** Validate the selected file against metadata stored in the project. */
+export function validateRelinkFile(asset: Pick<import('../domain/model').Asset, 'name' | 'size' | 'mime'>, file: Pick<File, 'name' | 'size' | 'type'>): void {
+ if(file.name!==asset.name) throw new Error(`ファイル名が一致しません（必要: ${asset.name}）`);
+ if(file.size!==asset.size) throw new Error('ファイルサイズが一致しません。別のファイルを選択した可能性があります');
+ if(asset.mime && file.type && file.type!==asset.mime) throw new Error(`ファイル形式が一致しません（必要: ${asset.mime}）`);
+}
+
+/** Recreate a session URL and preserve the asset ID referenced by timeline clips. */
+export async function relinkMedia(asset: import('../domain/model').Asset, file: File): Promise<import('../domain/model').Asset> {
+ validateRelinkFile(asset,file);
+ const result=await importMedia([file]);
+ if(!result.assets.length) throw new Error(result.bad.length?`未対応のファイル形式です: ${file.name}`:'ファイルを読み込めませんでした');
+ const imported=result.assets[0];
+ return {...asset,url:imported.url,mime:imported.mime||asset.mime,duration:imported.duration||asset.duration,width:imported.width??asset.width,height:imported.height??asset.height};
+}
