@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {blankProject} from './model';
 import {ProjectSchema} from './validation';
 import {createProject, projectDurationSeconds} from "./project";
-import {serializeProject} from '../services/io';
+import {serializeProject, validateRelinkFile} from '../services/io';
 
 describe('project file validation', () => {
   it('accepts a newly created project', () => {
@@ -103,4 +103,13 @@ describe('persistent project assets', () => {
     expect(serialized).toContain('clip.mp4');
     expect(serialized).not.toContain('blob:temporary-session-url');
   });
+});
+
+
+describe('media relinking metadata checks',()=>{
+ const saved={name:'camera.mp4',size:2048,mime:'video/mp4'};
+ it('accepts matching metadata',()=>expect(()=>validateRelinkFile(saved,{name:'camera.mp4',size:2048,type:'video/mp4'})).not.toThrow());
+ it('rejects a different filename',()=>expect(()=>validateRelinkFile(saved,{name:'other.mp4',size:2048,type:'video/mp4'})).toThrow('ファイル名'));
+ it('rejects a different size',()=>expect(()=>validateRelinkFile(saved,{name:'camera.mp4',size:1024,type:'video/mp4'})).toThrow('サイズ'));
+ it('rejects a different MIME type',()=>expect(()=>validateRelinkFile(saved,{name:'camera.mp4',size:2048,type:'video/quicktime'})).toThrow('形式'));
 });
