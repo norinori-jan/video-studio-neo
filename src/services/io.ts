@@ -1,8 +1,14 @@
 import type {Project} from '../domain/model';
 import {ProjectSchema} from '../domain/validation';
 
+/** Serialize durable project data; browser object URLs cannot survive a reload. */
+export function serializeProject(p:Project):string {
+ const durable={...p,assets:p.assets.map(({url:_sessionUrl,...asset})=>asset)};
+ return JSON.stringify(durable,null,2);
+}
+
 export const saveProject=(p:Project)=>{
- const u=URL.createObjectURL(new Blob([JSON.stringify(p,null,2)],{type:'application/json'}));
+ const u=URL.createObjectURL(new Blob([serializeProject(p)],{type:'application/json'}));
  const a=document.createElement('a');
  a.href=u;
  a.download=(p.name.replace(/[\\\\/:*?"<>|]/g,'_')||'project')+'.vsneo.json';

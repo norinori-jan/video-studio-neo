@@ -7,7 +7,8 @@ const AssetSchema = z.object({
   mime: z.string(),
   size: z.number().finite().nonnegative(),
   duration: z.number().finite().nonnegative(),
-  url: z.string().min(1),
+  // Object URLs are runtime-only. Older files may contain one; new saves omit it.
+  url: z.string().optional(),
   width: z.number().finite().positive().optional(),
   height: z.number().finite().positive().optional()
 }).passthrough();
@@ -41,6 +42,8 @@ export const ProjectSchema = z.object({
   fps: z.number().finite().positive(),
   duration: z.number().finite().nonnegative(),
   tracks: z.array(TrackSchema),
+  // Missing assets means a legacy project created before media metadata was persisted.
+  assets: z.array(AssetSchema).default([]),
   updatedAt: z.string().min(1)
 }).passthrough();
 
